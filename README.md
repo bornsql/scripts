@@ -12,3 +12,7 @@ Supports Enterprise Edition and Standard Edition, and is version aware for the a
 ## Power Saving Check
 
 A simple Windows Registry scan, using `xp_cmdshell 'powercfg /list'`. This script respects your `'show advanced options'` and `'xp_cmdshell'` settings under `sp_configure`, and will set them back the way it found them.
+
+## SQL Server 2000 Duplicate Index Finder
+
+A backport of Kimberly L. Tripp's duplicate index finder for SQL Server 2005 and higher.
