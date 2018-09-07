@@ -3,7 +3,7 @@
     https://bornsql.ca/memory/
     Copyright (c) BornSQL.ca
     Written by Randolph West, released under the MIT License
-    Last updated: 9 November 2016
+    Last updated: 7 September 2018
 
     Based on an original algorithm by Jonathan Kehayias:
     https://www.sqlskills.com/blogs/jonathan/how-much-memory-does-my-sql-server-actually-need/
@@ -28,6 +28,8 @@
 v1.0 - 2016-08-19 - Initial release.
 
 v1.1 - 2016-11-22 - Thread stack reservation; NUMA affinity; new version check.
+
+v1.2 - 2018-09-07 - Removed reference to errant DMV.
 
 */
 
