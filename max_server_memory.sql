@@ -45,7 +45,7 @@ DECLARE @numaNodesAfinned TINYINT;
 DECLARE @maxWorkerThreadCount INT;
 DECLARE @threadStack DECIMAL(20, 4);
 
-SELECT @cpuArchitecture = CASE WHEN @@VERSION LIKE '%<X64>%' THEN 2 WHEN @@VERSION LIKE '%<IA64>%' THEN 4 ELSE 0.5 END FROM sys.dm_os_windows_info WITH (NOLOCK);
+SELECT @cpuArchitecture = CASE WHEN @@VERSION LIKE '%<X64>%' THEN 2 WHEN @@VERSION LIKE '%<IA64>%' THEN 4 ELSE 0.5 END;
 SELECT @numaNodes = COUNT(DISTINCT parent_node_id) FROM sys.dm_os_schedulers WHERE scheduler_id < 255 AND parent_node_id < 64;
 SELECT @numaNodesAfinned = COUNT (DISTINCT parent_node_id) FROM sys.dm_os_schedulers WHERE scheduler_id < 255 AND parent_node_id < 64 AND is_online = 1;
 SELECT @maxWorkerThreadCount = max_workers_count FROM sys.dm_os_sys_info;
