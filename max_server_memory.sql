@@ -3,7 +3,7 @@
     https://bornsql.ca/memory/
     Copyright (c) BornSQL.ca
     Written by Randolph West, released under the MIT License
-    Last updated: 7 September 2018
+    Last updated: 17 March 2020
 
     Based on an original algorithm by Jonathan Kehayias:
     https://www.sqlskills.com/blogs/jonathan/how-much-memory-does-my-sql-server-actually-need/
@@ -30,6 +30,8 @@ v1.0 - 2016-08-19 - Initial release.
 v1.1 - 2016-11-22 - Thread stack reservation; NUMA affinity; new version check.
 
 v1.2 - 2018-09-07 - Removed reference to errant DMV.
+
+v1.3 - 2020-03-17 - Happy St. Patrick's Day.
 
 */
 
@@ -157,7 +159,6 @@ SELECT @@VERSION AS [Version],
 		ELSE 'Non-Enterprise Edition'
 		END AS [Edition],
 	CAST(@physicalMemorySource AS INT) AS [Physical RAM (MB)],
-	--CAST(@physicalMemory AS INT) AS [Physical RAM (GB)],
 	c.[value] AS [Configured Value (MB)],
 	c.[value_in_use] AS [Running Value (MB)],
 	CAST(@recommendedMemory * 1024 AS INT) AS [Recommended Value (MB)],
