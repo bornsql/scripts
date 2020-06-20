@@ -1,19 +1,27 @@
+/*
+	Power Saving Check
+	https://bornsql.ca/
+	Copyright (c) BornSQL.ca
+	Written by Randolph West, released under the MIT License
+	Last updated: 19 June 2020
+
+	A simple Windows Registry scan, using xp_cmdshell 'powercfg /list'.
+	This script respects your 'show advanced options' and 'xp_cmdshell'
+	settings under sp_configure, and will set them back the way it found
+	them.
+
+*/
+
 DECLARE @isCmdShellEnabled BIT;
 DECLARE @isShowAdvanced BIT;
 
-SELECT
-	@isCmdShellEnabled = CAST(value AS BIT)
-FROM
-	sys.configurations
-WHERE
-	name = 'xp_cmdshell';
+SELECT @isCmdShellEnabled = CAST(value AS BIT)
+FROM sys.configurations
+WHERE name = 'xp_cmdshell';
 
-SELECT
-	@isShowAdvanced = CAST(value AS BIT)
-FROM
-	sys.configurations
-WHERE
-	name = 'show advanced options';
+SELECT @isShowAdvanced = CAST(value AS BIT)
+FROM sys.configurations
+WHERE name = 'show advanced options';
 
 IF (@isShowAdvanced = 0)
 BEGIN
