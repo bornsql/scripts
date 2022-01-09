@@ -3,7 +3,7 @@
 	https://bornsql.ca/memory/
 	Copyright (c) BornSQL.ca
 	Written by Randolph West, released under the MIT License
-	Last updated: 19 June 2020
+	Last updated: 8 January 2022
 
 	Based on an original algorithm by Jonathan Kehayias:
 	https://www.sqlskills.com/blogs/jonathan/how-much-memory-does-my-sql-server-actually-need/
@@ -35,10 +35,19 @@ v1.3 - 2020-03-17 - Happy St. Patrick's Day.
 
 v1.4 - 2020-06-19 - Fixes to comments and formatting.
 
+v1.5 - 2022-01-08 - Add debug mode.
+
 */
 
 -- Set this to 1 if you want to configure NUMA Node Affinity
 DECLARE @configureNumaNodeAffinity BIT = 0;
+
+-- Set this to 1 if you want to specify a RAM amount
+DECLARE @debug BIT = 0;
+
+-- If @debug is set to 1, specify physical memory in MB here
+-- For example, if you have 1.82 TB of RAM, use 1908408
+DECLARE @physicalMemoryInMb DECIMAL(20, 4) = 1908408;
 
 DECLARE @physicalMemorySource DECIMAL(20, 4);
 DECLARE @physicalMemory DECIMAL(20, 4);
@@ -59,22 +68,36 @@ SELECT @cpuArchitecture = CASE
 							  ELSE
 								  0.5
 						  END;
-SELECT @numaNodes = COUNT(DISTINCT parent_node_id)
-FROM sys.dm_os_schedulers
-WHERE scheduler_id < 255
-	  AND parent_node_id < 64;
-SELECT @numaNodesAfinned = COUNT(DISTINCT parent_node_id)
-FROM sys.dm_os_schedulers
-WHERE scheduler_id < 255
-	  AND parent_node_id < 64
-	  AND is_online = 1;
-SELECT @maxWorkerThreadCount = max_workers_count
-FROM sys.dm_os_sys_info;
+
+SELECT @numaNodes = COUNT(DISTINCT [parent_node_id])
+FROM [sys].[dm_os_schedulers]
+WHERE [scheduler_id] < 255
+	  AND [parent_node_id] < 64;
+
+SELECT @numaNodesAfinned = COUNT(DISTINCT [parent_node_id])
+FROM [sys].[dm_os_schedulers]
+WHERE [scheduler_id] < 255
+	  AND [parent_node_id] < 64
+	  AND [is_online] = 1;
+
+SELECT @maxWorkerThreadCount = [max_workers_count]
+FROM [sys].[dm_os_sys_info];
+
 SELECT @threadStack = @maxWorkerThreadCount * @cpuArchitecture / 1024.0;
 
--- Get physical RAM on server
-SELECT @physicalMemorySource = CAST(total_physical_memory_kb AS DECIMAL(20, 4)) / CAST((1024.0) AS DECIMAL(20, 4))
-FROM sys.dm_os_sys_memory;
+-- Get physical RAM on server, or if @debug is set to 1
+-- use the value from @physicalMemoryInMb
+IF @debug = 1
+BEGIN
+	SELECT @physicalMemorySource = @physicalMemoryInMb;
+END;
+ELSE
+BEGIN
+	-- Get physical RAM on server
+	SELECT @physicalMemorySource
+		= CAST([total_physical_memory_kb] AS DECIMAL(20, 4)) / CAST((1024.0) AS DECIMAL(20, 4))
+	FROM [sys].[dm_os_sys_memory];
+END;
 
 -- Convert to nearest GB
 SELECT @physicalMemory = CEILING(@physicalMemorySource / CAST(1024.0 AS DECIMAL(20, 4)));
@@ -170,13 +193,13 @@ SELECT @@VERSION AS [Version],
 			   'Non-Enterprise Edition'
 	   END AS [Edition],
 	   CAST(@physicalMemorySource AS INT) AS [Physical RAM (MB)],
-	   c.[value] AS [Configured Value (MB)],
-	   c.[value_in_use] AS [Running Value (MB)],
+	   [c].[value] AS [Configured Value (MB)],
+	   [c].[value_in_use] AS [Running Value (MB)],
 	   CAST(@recommendedMemory * 1024 AS INT) AS [Recommended Value (MB)],
 	   N'EXEC sp_configure ''show advanced options'', 1; RECONFIGURE WITH OVERRIDE; EXEC sp_configure ''max server memory (MB)'', '
 	   + CAST(CAST(@recommendedMemory * 1024 AS INT) AS NVARCHAR(20))
 	   + '; EXEC sp_configure ''show advanced options'', 0; RECONFIGURE WITH OVERRIDE;' AS [Script]
-FROM sys.configurations c
+FROM [sys].[configurations] AS [c]
 WHERE [c].[name] = N'max server memory (MB)'
 OPTION (RECOMPILE);
 GO
